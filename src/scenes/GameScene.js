@@ -9,87 +9,90 @@ class GameScene extends Phaser.Scene {
         const w = CONFIG.width;
         const h = CONFIG.height;
 
-        // Фон
-        this.add.rectangle(w/2, h/2, w, h, 0x0a2f0a);
+        // === ФОН ===
+        this.createBackground();
 
-        // Жер (чөп)
-        this.add.rectangle(w/2, h - 100, w, 200, 0x1a4d1a);
-
-        // ===== РЕСУРСАР ПАНЕЛИ =====
+        // === РЕСУРСАР ПАНЕЛИ ===
         this.createResourcePanel();
 
-        // Негизги аталыш
-        this.add.text(w/2, 80, '🐜 КУМУРСКА ЧЕП 🐜', {
-            fontSize: '42px',
+        // === АТАЛЫШ ===
+        this.add.text(w/2, 75, '🐜 КУМУРСКА ЧЕП 🐜', {
+            fontSize: '46px',
             fontFamily: 'Arial',
-            color: '#ffdd88'
-        }).setOrigin(0.5).setShadow(2, 2, '#000', 4);
+            color: '#ffdd77'
+        }).setOrigin(0.5).setShadow(3, 3, '#000000', 5);
 
-        // Кумурскалар (тест)
+        // === КУМУРСКАЛАР ===
         this.createTestAnts();
 
-        console.log("🎮 GameScene + Ресурстар панели иштели жатат!");
+        console.log("🌲 GameScene жакшыртылды!");
+    }
+
+    createBackground() {
+        const w = CONFIG.width;
+        const h = CONFIG.height;
+
+        // Негизги фон (кара-жашыл)
+        this.add.rectangle(w/2, h/2, w, h, 0x0b2a0b);
+
+        // Жер (топурак + чөп)
+        this.add.rectangle(w/2, h - 90, w, 180, 0x1e3d1e);
+        
+        // Чөптүн үстү (жарыкыраак)
+        this.add.rectangle(w/2, h - 130, w, 60, 0x2a5c2a);
+
+        // Жөнөкөй декоративдик элементтер
+        this.add.text(150, h - 80, '🌿', { fontSize: '40px' });
+        this.add.text(380, h - 110, '🌱', { fontSize: '35px' });
+        this.add.text(650, h - 75, '🌿', { fontSize: '45px' });
+        this.add.text(920, h - 95, '🍄', { fontSize: '38px' });
     }
 
     createResourcePanel() {
         const resources = [
-            { name: '🍃 Leaves', value: CONFIG.resources.leaves, color: '#90ee90' },
-            { name: '🍯 Honey', value: CONFIG.resources.honey, color: '#ffd700' },
-            { name: '🟫 Dirt',   value: CONFIG.resources.dirt, color: '#c19a6b' },
-            { name: '💧 Water', value: CONFIG.resources.water, color: '#87ceeb' }
+            { icon: '🍃', name: 'Leaves', value: CONFIG.resources.leaves, color: '#90ee90' },
+            { icon: '🍯', name: 'Honey', value: CONFIG.resources.honey, color: '#ffcc00' },
+            { icon: '🟫', name: 'Dirt',  value: CONFIG.resources.dirt, color: '#c19a6b' },
+            { icon: '💧', name: 'Water', value: CONFIG.resources.water, color: '#87cefa' }
         ];
 
-        let x = 30;
+        let x = 40;
         resources.forEach(res => {
-            // Фон
-            this.add.rectangle(x + 80, 50, 160, 55, 0x000000, 0.6)
-                .setStrokeStyle(2, 0x333333);
+            const box = this.add.rectangle(x + 85, 48, 170, 58, 0x112211, 0.85)
+                .setStrokeStyle(3, 0x334422);
 
-            // Иконка + ат
-            this.add.text(x + 20, 40, res.name, {
-                fontSize: '18px',
-                color: res.color
+            this.add.text(x + 25, 38, res.icon + " " + res.name, {
+                fontSize: '19px',
+                color: res.color,
+                fontStyle: 'bold'
             });
 
-            // Сан
-            this.add.text(x + 20, 65, res.value.toString(), {
-                fontSize: '22px',
+            this.add.text(x + 30, 63, res.value.toString(), {
+                fontSize: '24px',
                 color: '#ffffff',
                 fontStyle: 'bold'
             });
 
-            x += 190;
+            x += 195;
         });
     }
 
     createTestAnts() {
-        const ants = [
-            {x: 200, y: 220, size: 65},
-            {x: 450, y: 280, size: 55},
-            {x: 720, y: 200, size: 70},
-            {x: 950, y: 260, size: 50}
+        const positions = [
+            {x: 180, y: 240, size: 68},
+            {x: 420, y: 290, size: 52},
+            {x: 680, y: 210, size: 72},
+            {x: 880, y: 265, size: 58},
+            {x: 1050, y: 230, size: 48}
         ];
 
-        ants.forEach(ant => {
-            this.add.text(ant.x, ant.y, '🐜', { 
-                fontSize: ant.size + 'px' 
-            }).setOrigin(0.5);
+        positions.forEach(p => {
+            this.add.text(p.x, p.y, '🐜', { fontSize: p.size + 'px' }).setOrigin(0.5);
         });
     }
 }
 
 // Убактылуу сценалар
-class BootScene extends Phaser.Scene {
-    constructor() { super('BootScene'); }
-    create() { this.scene.start('PreloadScene'); }
-}
-
-class PreloadScene extends Phaser.Scene {
-    constructor() { super('PreloadScene'); }
-    create() { this.scene.start('MenuScene'); }
-}
-
-class MenuScene extends Phaser.Scene {
-    constructor() { super('MenuScene'); }
-    create() { this.scene.start('GameScene'); }
-}
+class BootScene extends Phaser.Scene { constructor() { super('BootScene'); } create() { this.scene.start('PreloadScene'); } }
+class PreloadScene extends Phaser.Scene { constructor() { super('PreloadScene'); } create() { this.scene.start('MenuScene'); } }
+class MenuScene extends Phaser.Scene { constructor() { super('MenuScene'); } create() { this.scene.start('GameScene'); } }
