@@ -11,24 +11,17 @@ class GameScene extends Phaser.Scene {
         const w = CONFIG.width;
         const h = CONFIG.height;
 
-        // Фон
         this.createBackground();
-
-        // Ресурстар
         this.createResourcePanel();
-
-        // Аталыш
+        
         this.add.text(w/2, 75, '🐜 КУМУРСКА ЧЕП 🐜', {
             fontSize: '42px', color: '#ffdd77'
         }).setOrigin(0.5).setShadow(3, 3, '#000', 5);
 
-        // Кумурскалар
         this.createAnimatedAnts();
-
-        // Build Menu
         this.createBuildMenu();
 
-        console.log("🏗️ Имарат салуу системасы иштели жатат!");
+        console.log("🏗️ Build Menu жаңыртылды! Тест кылыңыз.");
     }
 
     createBackground() {
@@ -71,9 +64,8 @@ class GameScene extends Phaser.Scene {
 
         antData.forEach(data => {
             const ant = this.add.text(data.startX, data.y, '🐜', { fontSize: '65px' }).setOrigin(0.5);
-            
-            this.tweens.add({ targets: ant, x: data.startX + 280, duration: 3500, delay: data.delay, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-            this.tweens.add({ targets: ant, y: data.y - 12, duration: 800, delay: data.delay, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+            this.tweens.add({ targets: ant, x: data.startX + 280, duration: 3500, delay: data.delay, yoyo: true, repeat: -1 });
+            this.tweens.add({ targets: ant, y: data.y - 12, duration: 800, delay: data.delay, yoyo: true, repeat: -1 });
         });
     }
 
@@ -85,19 +77,28 @@ class GameScene extends Phaser.Scene {
             { name: "Queen Chamber", emoji: "👑", cost: 200 }
         ];
 
-        let x = CONFIG.width - 140;
-        buildTypes.forEach((building, index) => {
-            const btn = this.add.rectangle(x, 120 + index * 90, 110, 75, 0x223322, 0.9)
-                .setStrokeStyle(3, 0x55aa55)
-                .setInteractive();
+        let y = 140;
+        buildTypes.forEach(building => {
+            const btnBg = this.add.rectangle(CONFIG.width - 90, y, 130, 80, 0x223322, 0.95)
+                .setStrokeStyle(4, 0x55bb55)
+                .setInteractive({ useHandCursor: true });
 
-            this.add.text(x, 105, building.emoji, { fontSize: '40px' }).setOrigin(0.5);
-            this.add.text(x, 145, building.name, { fontSize: '14px', color: '#ffffff' }).setOrigin(0.5);
+            this.add.text(CONFIG.width - 90, y - 18, building.emoji, { fontSize: '42px' }).setOrigin(0.5);
+            this.add.text(CONFIG.width - 90, y + 22, building.name, { fontSize: '15px', color: '#ffffff' }).setOrigin(0.5);
 
-            btn.on('pointerdown', () => {
+            // Click иштөөсү үчүн
+            btnBg.on('pointerdown', () => {
                 this.selectedBuilding = building;
-                console.log(`🛠️ Тандалды: ${building.name}`);
+                console.log(`✅ Тандалды: ${building.name} (${building.cost} Leaves)`);
+                
+                // Визуалдык эффект
+                btnBg.setStrokeStyle(4, 0xffee55);
+                this.time.delayedCall(200, () => {
+                    btnBg.setStrokeStyle(4, 0x55bb55);
+                });
             });
+
+            y += 95;
         });
     }
 }
