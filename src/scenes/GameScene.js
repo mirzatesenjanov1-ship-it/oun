@@ -22,7 +22,7 @@ class GameScene extends Phaser.Scene {
             color: '#ffdd88'
         }).setOrigin(0.5);
 
-        this.add.text(w/2, h/2 + 10, 'Оюн иштели жатат...\nЖакында база куруу башталат', {
+        this.add.text(w/2, h/2 + 10, 'Оюн иштелип жатат...\nЖакында база куруу башталат', {
             fontSize: '26px',
             fontFamily: 'Arial',
             color: '#aaffaa',
