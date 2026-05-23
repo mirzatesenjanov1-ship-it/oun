@@ -3,6 +3,8 @@
 class GameScene extends Phaser.Scene {
     constructor() {
         super('GameScene');
+        this.selectedBuilding = null;
+        this.buildings = [];
     }
 
     create() {
@@ -17,14 +19,16 @@ class GameScene extends Phaser.Scene {
 
         // Аталыш
         this.add.text(w/2, 75, '🐜 КУМУРСКА ЧЕП 🐜', {
-            fontSize: '46px',
-            color: '#ffdd77'
+            fontSize: '42px', color: '#ffdd77'
         }).setOrigin(0.5).setShadow(3, 3, '#000', 5);
 
-        // Анимациялуу кумурскалар
+        // Кумурскалар
         this.createAnimatedAnts();
 
-        console.log("🐜 Кумурскалар анимация менен иштели жатат!");
+        // Build Menu
+        this.createBuildMenu();
+
+        console.log("🏗️ Имарат салуу системасы иштели жатат!");
     }
 
     createBackground() {
@@ -58,40 +62,41 @@ class GameScene extends Phaser.Scene {
     }
 
     createAnimatedAnts() {
-        // Кумурскаларды анимация менен жылдыруу
         const antData = [
             { startX: 150, y: 280, delay: 0 },
             { startX: 380, y: 320, delay: 800 },
             { startX: 650, y: 250, delay: 400 },
-            { startX: 880, y: 300, delay: 1200 },
-            { startX: 1050, y: 270, delay: 600 }
+            { startX: 880, y: 300, delay: 1200 }
         ];
 
         antData.forEach(data => {
-            const ant = this.add.text(data.startX, data.y, '🐜', { 
-                fontSize: '65px' 
-            }).setOrigin(0.5);
+            const ant = this.add.text(data.startX, data.y, '🐜', { fontSize: '65px' }).setOrigin(0.5);
+            
+            this.tweens.add({ targets: ant, x: data.startX + 280, duration: 3500, delay: data.delay, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+            this.tweens.add({ targets: ant, y: data.y - 12, duration: 800, delay: data.delay, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        });
+    }
 
-            // Солдон оңго жана кайра солго кыймыл
-            this.tweens.add({
-                targets: ant,
-                x: data.startX + 280,
-                duration: 3500,
-                delay: data.delay,
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
+    createBuildMenu() {
+        const buildTypes = [
+            { name: "Туннель", emoji: "🕳️", cost: 50 },
+            { name: "Склад", emoji: "📦", cost: 80 },
+            { name: "Казарма", emoji: "⚔️", cost: 120 },
+            { name: "Queen Chamber", emoji: "👑", cost: 200 }
+        ];
 
-            // Кичине өйдө-төмөн термелүү
-            this.tweens.add({
-                targets: ant,
-                y: data.y - 12,
-                duration: 800,
-                delay: data.delay,
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut'
+        let x = CONFIG.width - 140;
+        buildTypes.forEach((building, index) => {
+            const btn = this.add.rectangle(x, 120 + index * 90, 110, 75, 0x223322, 0.9)
+                .setStrokeStyle(3, 0x55aa55)
+                .setInteractive();
+
+            this.add.text(x, 105, building.emoji, { fontSize: '40px' }).setOrigin(0.5);
+            this.add.text(x, 145, building.name, { fontSize: '14px', color: '#ffffff' }).setOrigin(0.5);
+
+            btn.on('pointerdown', () => {
+                this.selectedBuilding = building;
+                console.log(`🛠️ Тандалды: ${building.name}`);
             });
         });
     }
