@@ -6,7 +6,7 @@ class GameScene extends Phaser.Scene {
         this.buildings = [];
         this.workers = [];
         this.army = [];
-        this.resources = { ...CONFIG.resources };
+        this.resources = { leaves: 800, honey: 400, dirt: 500, water: 250 };
     }
 
     create() {
@@ -16,7 +16,6 @@ class GameScene extends Phaser.Scene {
         this.spawnWorkers();
         this.createBuildMenu();
 
-        // Input
         this.cursors = this.input.keyboard.createCursorKeys();
         this.keys = this.input.keyboard.addKeys('W,A,S,D');
 
@@ -24,20 +23,20 @@ class GameScene extends Phaser.Scene {
             if (this.selectedBuilding) {
                 this.placeBuilding(pointer.worldX, pointer.worldY);
             } else {
-                this.checkBuildingClick(pointer.worldX, pointer.worldY);
+                this.handleClick(pointer.worldX, pointer.worldY);
             }
         });
 
-        this.time.addEvent({ delay: 1000, callback: this.collectResources, callbackScope: this, loop: true });
+        this.time.addEvent({ delay: 800, callback: this.gameTick, callbackScope: this, loop: true });
 
-        console.log("🐜 КУМУРСКА ЧЕП — ЖАНДУУ ВЕРСИЯ ИШТЕП ЖАТАТ!");
+        console.log("🎮 Кумурска Чеп — Clash of Clans стили иштели жатат!");
     }
 
     createBackground() {
-        const w = CONFIG.width * 2;
-        const h = CONFIG.height * 1.8;
+        const w = CONFIG.width * 2.2;
+        const h = CONFIG.height * 2;
         this.add.rectangle(w/2, h/2, w, h, 0x0b2a0b);
-        this.add.rectangle(w/2, h - 120, w, 240, 0x1e3d1e);
+        this.add.rectangle(w/2, h - 140, w, 280, 0x1e3d1e);
     }
 
     createResourcePanel() {
@@ -59,27 +58,25 @@ class GameScene extends Phaser.Scene {
     }
 
     createTitle() {
-        this.add.text(CONFIG.width/2, 72, '🐜 КУМУРСКА ЧЕП 🐜', {
-            fontSize: '44px', color: '#ffdd77'
-        }).setOrigin(0.5).setShadow(4,4,'#000',6);
+        this.add.text(CONFIG.width/2, 65, '🐜 КУМУРСКА ЧЕП 🐜', {
+            fontSize: '46px', color: '#ffdd77'
+        }).setOrigin(0.5).setShadow(4,4,'#000',8);
     }
 
     spawnWorkers() {
-        for (let i = 0; i < 12; i++) {
-            const worker = this.add.text(300 + Math.random()*600, 200 + Math.random()*300, '🐜', {fontSize:'52px'}).setOrigin(0.5);
-            worker.isWorker = true;
+        for (let i = 0; i < 15; i++) {
+            const worker = this.add.text(400 + Math.random()*500, 250 + Math.random()*250, '🐜', {fontSize:'48px'}).setOrigin(0.5);
             this.workers.push(worker);
-            
-            this.makeAntAlive(worker);
+            this.makeAntMove(worker);
         }
     }
 
-    makeAntAlive(ant) {
+    makeAntMove(ant) {
         this.tweens.add({
             targets: ant,
-            x: ant.x + (Math.random() * 300 - 150),
-            y: ant.y + (Math.random() * 200 - 100),
-            duration: 1800 + Math.random() * 1200,
+            x: ant.x + (Math.random() * 400 - 200),
+            y: ant.y + (Math.random() * 300 - 150),
+            duration: 1400 + Math.random() * 1600,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut'
@@ -87,71 +84,69 @@ class GameScene extends Phaser.Scene {
     }
 
     createBuildMenu() {
-        const buildings = [
-            {name:"Туннель", emoji:"🕳️", cost:60, type:"tunnel"},
-            {name:"Склад", emoji:"📦", cost:110, type:"storage"},
-            {name:"Казарма", emoji:"⚔️", cost:160, type:"barracks"},
-            {name:"Queen Chamber", emoji:"👑", cost:280, type:"queen"}
+        const list = [
+            {name:"Туннель", emoji:"🕳️", cost:70, type:"tunnel"},
+            {name:"Склад", emoji:"📦", cost:120, type:"storage"},
+            {name:"Казарма", emoji:"⚔️", cost:180, type:"barracks"},
+            {name:"Queen", emoji:"👑", cost:320, type:"queen"}
         ];
 
-        let y = 145;
-        buildings.forEach(b => {
-            const btn = this.add.rectangle(CONFIG.width - 90, y, 135, 82, 0x223322, 0.95)
+        let y = 140;
+        list.forEach(b => {
+            const btn = this.add.rectangle(CONFIG.width - 85, y, 130, 78, 0x223322, 0.95)
                 .setStrokeStyle(4, 0x55bb55).setInteractive({useHandCursor:true});
 
-            this.add.text(CONFIG.width-90, y-20, b.emoji, {fontSize:'42px'}).setOrigin(0.5);
-            this.add.text(CONFIG.width-90, y+25, b.name, {fontSize:'14px', color:'#fff'}).setOrigin(0.5);
+            this.add.text(CONFIG.width-85, y-18, b.emoji, {fontSize:'40px'}).setOrigin(0.5);
+            this.add.text(CONFIG.width-85, y+22, b.name, {fontSize:'14px', color:'#fff'}).setOrigin(0.5);
 
-            btn.on('pointerdown', () => {
-                this.selectedBuilding = b;
-                console.log(`✅ Тандалды: ${b.name}`);
-            });
-            y += 98;
+            btn.on('pointerdown', () => { this.selectedBuilding = b; });
+            y += 95;
         });
     }
 
     placeBuilding(x, y) {
         if (!this.selectedBuilding || this.resources.leaves < this.selectedBuilding.cost) return;
 
-        const building = this.add.text(x, y, this.selectedBuilding.emoji, {fontSize:'58px'}).setOrigin(0.5).setInteractive();
+        const b = this.add.text(x, y, this.selectedBuilding.emoji, {fontSize:'56px'}).setOrigin(0.5).setInteractive();
         
-        this.buildings.push({
-            obj: building,
-            type: this.selectedBuilding.type,
-            level: 1,
-            lastCollect: Date.now()
-        });
+        this.buildings.push({obj: b, type: this.selectedBuilding.type, level: 1});
 
         this.resources.leaves -= this.selectedBuilding.cost;
         this.updateResources();
-        console.log(`🏗️ ${this.selectedBuilding.name} (Level 1) салынды!`);
     }
 
-    checkBuildingClick(x, y) {
-        for (let building of this.buildings) {
-            if (Phaser.Math.Distance.Between(x, y, building.obj.x, building.obj.y) < 50) {
-                this.upgradeBuilding(building);
+    handleClick(x, y) {
+        for (let b of this.buildings) {
+            if (Phaser.Math.Distance.Between(x, y, b.obj.x, b.obj.y) < 60) {
+                if (b.type === "barracks") this.trainArmy(b);
+                else this.upgradeBuilding(b);
                 return;
             }
         }
     }
 
     upgradeBuilding(building) {
-        if (this.resources.leaves < 100) return;
-        
-        building.level = (building.level || 1) + 1;
-        building.obj.setFontSize(58 + building.level * 8);
-        
-        this.resources.leaves -= 100;
+        if (this.resources.leaves < 120) return;
+        building.level++;
+        building.obj.setFontSize(56 + building.level * 6);
+        this.resources.leaves -= 120;
         this.updateResources();
-        
-        console.log(`⬆️ ${building.type} Level ${building.level} болду!`);
+        console.log(`⬆️ ${building.type} Level ${building.level}`);
+    }
+
+    trainArmy(barracks) {
+        if (this.resources.honey < 50) return;
+        const soldier = this.add.text(barracks.obj.x + 60, barracks.obj.y, '🐜⚔️', {fontSize:'45px'}).setOrigin(0.5);
+        this.army.push(soldier);
+        this.resources.honey -= 50;
+        this.updateResources();
+        console.log("⚔️ Жаңы согушчу чыкты!");
     }
 
     collectResources() {
         let gain = 0;
         this.buildings.forEach(b => {
-            if (b.type === "storage" || b.type === "tunnel") gain += 8 * (b.level || 1);
+            if (b.type === "storage" || b.type === "tunnel") gain += 15 * (b.level || 1);
         });
         if (gain > 0) {
             this.resources.leaves += gain;
@@ -167,11 +162,10 @@ class GameScene extends Phaser.Scene {
     }
 
     update() {
-        // Камера башкаруу
-        if (this.cursors.left.isDown || this.keys.A.isDown) this.cameras.main.scrollX -= 10;
-        if (this.cursors.right.isDown || this.keys.D.isDown) this.cameras.main.scrollX += 10;
-        if (this.cursors.up.isDown || this.keys.W.isDown) this.cameras.main.scrollY -= 10;
-        if (this.cursors.down.isDown || this.keys.S.isDown) this.cameras.main.scrollY += 10;
+        if (this.cursors.left.isDown || this.keys.A.isDown) this.cameras.main.scrollX -= 12;
+        if (this.cursors.right.isDown || this.keys.D.isDown) this.cameras.main.scrollX += 12;
+        if (this.cursors.up.isDown || this.keys.W.isDown) this.cameras.main.scrollY -= 12;
+        if (this.cursors.down.isDown || this.keys.S.isDown) this.cameras.main.scrollY += 12;
     }
 }
 
