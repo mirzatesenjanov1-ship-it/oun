@@ -1,7 +1,5 @@
 class KumurskaChep {
-    constructor() {
-        this.init();
-    }
+    constructor() { this.init(); }
 
     init() {
         const gameConfig = {
@@ -11,17 +9,10 @@ class KumurskaChep {
             parent: 'game-container',
             backgroundColor: CONFIG.backgroundColor,
             scene: [BootScene, PreloadScene, MenuScene, GameScene],
-            scale: {
-                mode: Phaser.Scale.FIT,
-                autoCenter: Phaser.Scale.CENTER_BOTH
-            }
+            scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }
         };
-
         this.game = new Phaser.Game(gameConfig);
-        console.log("🚀 Kumurska Chep - Оюн башталды!");
     }
 }
 
-window.onload = () => {
-    new KumurskaChep();
-};
+window.onload = () => new KumurskaChep();
