@@ -1,4 +1,3 @@
-// main.js
 class KumurskaChep {
     constructor() {
         this.init();
@@ -11,10 +10,6 @@ class KumurskaChep {
             height: CONFIG.height,
             parent: 'game-container',
             backgroundColor: CONFIG.backgroundColor,
-            physics: {
-                default: 'arcade',
-                arcade: { debug: CONFIG.debug }
-            },
             scene: [BootScene, PreloadScene, MenuScene, GameScene],
             scale: {
                 mode: Phaser.Scale.FIT,
@@ -23,7 +18,7 @@ class KumurskaChep {
         };
 
         this.game = new Phaser.Game(gameConfig);
-        console.log("🚀 Kumurska Chep оюну иштели жатат...");
+        console.log("🚀 Kumurska Chep - Оюн башталды!");
     }
 }
 
