@@ -4,13 +4,12 @@ const CONFIG = {
     backgroundColor: '#0a1f0a',
     
     resources: {
-        leaves: 800,
-        honey: 300,
-        dirt: 450,
-        water: 200
+        leaves: 1200,
+        honey: 450,
+        dirt: 600,
+        water: 300
     },
-    
     debug: false
 };
 
-console.log("✅ Kumurska Chep конфигурациясы жүктөлдү!");
+console.log("✅ Kumurska Chep толук версиясы жүктөлдү!");
