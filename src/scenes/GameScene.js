@@ -4,6 +4,7 @@ class GameScene extends Phaser.Scene {
         super('GameScene');
         this.selectedBuilding = null;
         this.buildings = [];
+        this.workers = [];
         this.resources = { ...CONFIG.resources };
     }
 
@@ -14,14 +15,14 @@ class GameScene extends Phaser.Scene {
         this.createAnimatedAnts();
         this.createBuildMenu();
 
-        // Жерге басуу менен имарат салуу
+        // Жерге басуу менен салуу
         this.input.on('pointerdown', (pointer) => {
             if (this.selectedBuilding) {
                 this.placeBuilding(pointer.x, pointer.y);
             }
         });
 
-        console.log("🏰 Kumurska Chep — Ойногого даяр!");
+        console.log("🏰 Kumurska Chep — Шедевр версиясы иштели жатат!");
     }
 
     createBackground() {
@@ -46,7 +47,7 @@ class GameScene extends Phaser.Scene {
             this.add.text(x + 25, 38, res.icon + " " + res.key.charAt(0).toUpperCase() + res.key.slice(1), 
                 { fontSize: '19px', color: res.color, fontStyle: 'bold' });
             
-            this[res.key + 'Text'] = this.add.text(x + 30, 63, this.resources[res.key].toString(), 
+            this[res.key + 'Text'] = this.add.text(x + 30, 63, this.resources[res.key], 
                 { fontSize: '24px', color: '#fff', fontStyle: 'bold' });
             x += 195;
         });
@@ -59,11 +60,19 @@ class GameScene extends Phaser.Scene {
     }
 
     createAnimatedAnts() {
-        const positions = [150, 380, 650, 880];
-        positions.forEach((x, i) => {
-            const ant = this.add.text(x, 260 + Math.random()*80, '🐜', { fontSize: '62px' }).setOrigin(0.5);
-            this.tweens.add({ targets: ant, x: x + 220, duration: 3000 + i*400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-        });
+        for (let i = 0; i < 6; i++) {
+            const ant = this.add.text(100 + i*150, 220 + Math.random()*120, '🐜', { fontSize: '58px' }).setOrigin(0.5);
+            this.workers.push(ant);
+            
+            this.tweens.add({
+                targets: ant,
+                x: 100 + i*150 + 180,
+                duration: 2800 + Math.random()*1200,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+        }
     }
 
     createBuildMenu() {
@@ -93,6 +102,10 @@ class GameScene extends Phaser.Scene {
 
     placeBuilding(x, y) {
         if (!this.selectedBuilding) return;
+        if (this.resources.leaves < this.selectedBuilding.cost) {
+            console.log("❌ Жетиштүү ресурстар жок!");
+            return;
+        }
 
         const building = this.add.text(x, y, this.selectedBuilding.emoji, { 
             fontSize: '58px' 
@@ -100,16 +113,14 @@ class GameScene extends Phaser.Scene {
 
         this.buildings.push({
             obj: building,
-            type: this.selectedBuilding.type
+            type: this.selectedBuilding.type,
+            lastCollect: Date.now()
         });
 
-        console.log(`🏗️ ${this.selectedBuilding.name} салынды!`);
+        this.resources.leaves -= this.selectedBuilding.cost;
+        this.updateResources();
 
-        // Ресурстарды азайтуу
-        if (this.resources.leaves >= this.selectedBuilding.cost) {
-            this.resources.leaves -= this.selectedBuilding.cost;
-            this.updateResources();
-        }
+        console.log(`🏗️ ${this.selectedBuilding.name} салынды!`);
     }
 
     updateResources() {
