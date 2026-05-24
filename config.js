@@ -15,4 +15,4 @@ const CONFIG = {
     debug: true
 };
 
-console.log("✅ Config жүктөлдү!");
+console.log("✅ Kumurska Chep конфигурациясы жүктөлдү!");
