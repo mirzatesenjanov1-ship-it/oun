@@ -21,14 +21,14 @@ class GameScene extends Phaser.Scene {
         this.createAnimatedAnts();
         this.createBuildMenu();
 
-        // Картага басуу менен имарат салуу
+        // Жерге басуу менен имарат салуу
         this.input.on('pointerdown', (pointer) => {
             if (this.selectedBuilding) {
                 this.placeBuilding(pointer.x, pointer.y);
             }
         });
 
-        console.log("🏗️ Имарат салуу системасы даяр! Тандоо → Жерге басуу");
+        console.log("🏗️ Kumurska Chep - Оюн даяр!");
     }
 
     createBackground() {
@@ -44,7 +44,7 @@ class GameScene extends Phaser.Scene {
         this.add.text(920, h - 100, '🍄', { fontSize: '38px' });
     }
 
-    createResourcePanel() { /* ... мурунку код ... */ 
+    createResourcePanel() {
         const resources = [
             { icon: '🍃', name: 'Leaves', value: CONFIG.resources.leaves, color: '#90ee90' },
             { icon: '🍯', name: 'Honey', value: CONFIG.resources.honey, color: '#ffcc00' },
@@ -61,7 +61,7 @@ class GameScene extends Phaser.Scene {
         });
     }
 
-    createAnimatedAnts() { /* ... мурунку код ... */ 
+    createAnimatedAnts() {
         const antData = [
             { startX: 150, y: 280, delay: 0 },
             { startX: 380, y: 320, delay: 800 },
@@ -95,7 +95,7 @@ class GameScene extends Phaser.Scene {
 
             btnBg.on('pointerdown', () => {
                 this.selectedBuilding = building;
-                console.log(`✅ Тандалды: ${building.name}`);
+                console.log(`✅ Тандалды: ${building.name} (${building.cost} Leaves)`);
             });
 
             y += 95;
@@ -105,17 +105,12 @@ class GameScene extends Phaser.Scene {
     placeBuilding(x, y) {
         if (!this.selectedBuilding) return;
 
-        // Имаратты кошуу
         const building = this.add.text(x, y, this.selectedBuilding.emoji, { 
             fontSize: '55px' 
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setInteractive();
 
         this.buildings.push(building);
-
         console.log(`🏗️ ${this.selectedBuilding.name} салынды!`);
-
-        // Тандоону тазалоо (бир имараттан кийин)
-        // this.selectedBuilding = null;   // Кааласаңыз кийинчерээк ачыңыз
     }
 }
 
