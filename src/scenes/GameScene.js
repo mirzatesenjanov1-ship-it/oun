@@ -5,8 +5,8 @@ class GameScene extends Phaser.Scene {
         this.selectedBuilding = null;
         this.buildings = [];
         this.workers = [];
+        this.army = [];
         this.resources = { ...CONFIG.resources };
-        this.cameraSpeed = 8;
     }
 
     create() {
@@ -16,21 +16,21 @@ class GameScene extends Phaser.Scene {
         this.spawnWorkers();
         this.createBuildMenu();
 
-        // Клавиатура башкаруу
+        // Input
         this.cursors = this.input.keyboard.createCursorKeys();
         this.keys = this.input.keyboard.addKeys('W,A,S,D');
 
-        // Жерге басуу менен имарат салуу
         this.input.on('pointerdown', (pointer) => {
             if (this.selectedBuilding) {
                 this.placeBuilding(pointer.worldX, pointer.worldY);
+            } else {
+                this.checkBuildingClick(pointer.worldX, pointer.worldY);
             }
         });
 
-        // Ресурстарды автоматтык чогултуу
-        this.time.addEvent({ delay: 1200, callback: this.collectResources, callbackScope: this, loop: true });
+        this.time.addEvent({ delay: 1000, callback: this.collectResources, callbackScope: this, loop: true });
 
-        console.log("⌨️ Клавиатура башкаруу кошулду! WASD же Arrow keys менен жылдыр.");
+        console.log("🐜 КУМУРСКА ЧЕП — ЖАНДУУ ВЕРСИЯ ИШТЕП ЖАТАТ!");
     }
 
     createBackground() {
@@ -65,18 +65,25 @@ class GameScene extends Phaser.Scene {
     }
 
     spawnWorkers() {
-        for (let i = 0; i < 10; i++) {
-            const worker = this.add.text(200 + i*90, 280 + Math.random()*180, '🐜', {fontSize:'55px'}).setOrigin(0.5);
+        for (let i = 0; i < 12; i++) {
+            const worker = this.add.text(300 + Math.random()*600, 200 + Math.random()*300, '🐜', {fontSize:'52px'}).setOrigin(0.5);
+            worker.isWorker = true;
             this.workers.push(worker);
-            this.tweens.add({
-                targets: worker,
-                x: 200 + i*90 + 140,
-                duration: 2200 + Math.random()*1800,
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
+            
+            this.makeAntAlive(worker);
         }
+    }
+
+    makeAntAlive(ant) {
+        this.tweens.add({
+            targets: ant,
+            x: ant.x + (Math.random() * 300 - 150),
+            y: ant.y + (Math.random() * 200 - 100),
+            duration: 1800 + Math.random() * 1200,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
     }
 
     createBuildMenu() {
@@ -106,23 +113,45 @@ class GameScene extends Phaser.Scene {
     placeBuilding(x, y) {
         if (!this.selectedBuilding || this.resources.leaves < this.selectedBuilding.cost) return;
 
-        const building = this.add.text(x, y, this.selectedBuilding.emoji, {fontSize:'56px'}).setOrigin(0.5);
+        const building = this.add.text(x, y, this.selectedBuilding.emoji, {fontSize:'58px'}).setOrigin(0.5).setInteractive();
         
         this.buildings.push({
             obj: building,
             type: this.selectedBuilding.type,
+            level: 1,
             lastCollect: Date.now()
         });
 
         this.resources.leaves -= this.selectedBuilding.cost;
         this.updateResources();
-        console.log(`🏗️ ${this.selectedBuilding.name} салынды!`);
+        console.log(`🏗️ ${this.selectedBuilding.name} (Level 1) салынды!`);
+    }
+
+    checkBuildingClick(x, y) {
+        for (let building of this.buildings) {
+            if (Phaser.Math.Distance.Between(x, y, building.obj.x, building.obj.y) < 50) {
+                this.upgradeBuilding(building);
+                return;
+            }
+        }
+    }
+
+    upgradeBuilding(building) {
+        if (this.resources.leaves < 100) return;
+        
+        building.level = (building.level || 1) + 1;
+        building.obj.setFontSize(58 + building.level * 8);
+        
+        this.resources.leaves -= 100;
+        this.updateResources();
+        
+        console.log(`⬆️ ${building.type} Level ${building.level} болду!`);
     }
 
     collectResources() {
         let gain = 0;
         this.buildings.forEach(b => {
-            if (b.type === "storage" || b.type === "tunnel") gain += 12;
+            if (b.type === "storage" || b.type === "tunnel") gain += 8 * (b.level || 1);
         });
         if (gain > 0) {
             this.resources.leaves += gain;
@@ -138,11 +167,11 @@ class GameScene extends Phaser.Scene {
     }
 
     update() {
-        // Клавиатура менен камераны жылдыруу
-        if (this.cursors.left.isDown || this.keys.A.isDown) this.cameras.main.scrollX -= this.cameraSpeed;
-        if (this.cursors.right.isDown || this.keys.D.isDown) this.cameras.main.scrollX += this.cameraSpeed;
-        if (this.cursors.up.isDown || this.keys.W.isDown) this.cameras.main.scrollY -= this.cameraSpeed;
-        if (this.cursors.down.isDown || this.keys.S.isDown) this.cameras.main.scrollY += this.cameraSpeed;
+        // Камера башкаруу
+        if (this.cursors.left.isDown || this.keys.A.isDown) this.cameras.main.scrollX -= 10;
+        if (this.cursors.right.isDown || this.keys.D.isDown) this.cameras.main.scrollX += 10;
+        if (this.cursors.up.isDown || this.keys.W.isDown) this.cameras.main.scrollY -= 10;
+        if (this.cursors.down.isDown || this.keys.S.isDown) this.cameras.main.scrollY += 10;
     }
 }
 
