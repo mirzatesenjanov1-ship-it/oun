@@ -21,7 +21,14 @@ class GameScene extends Phaser.Scene {
         this.createAnimatedAnts();
         this.createBuildMenu();
 
-        console.log("🏗️ Build Menu жаңыртылды! Тест кылыңыз.");
+        // Картага басуу менен имарат салуу
+        this.input.on('pointerdown', (pointer) => {
+            if (this.selectedBuilding) {
+                this.placeBuilding(pointer.x, pointer.y);
+            }
+        });
+
+        console.log("🏗️ Имарат салуу системасы даяр! Тандоо → Жерге басуу");
     }
 
     createBackground() {
@@ -37,7 +44,7 @@ class GameScene extends Phaser.Scene {
         this.add.text(920, h - 100, '🍄', { fontSize: '38px' });
     }
 
-    createResourcePanel() {
+    createResourcePanel() { /* ... мурунку код ... */ 
         const resources = [
             { icon: '🍃', name: 'Leaves', value: CONFIG.resources.leaves, color: '#90ee90' },
             { icon: '🍯', name: 'Honey', value: CONFIG.resources.honey, color: '#ffcc00' },
@@ -54,7 +61,7 @@ class GameScene extends Phaser.Scene {
         });
     }
 
-    createAnimatedAnts() {
+    createAnimatedAnts() { /* ... мурунку код ... */ 
         const antData = [
             { startX: 150, y: 280, delay: 0 },
             { startX: 380, y: 320, delay: 800 },
@@ -86,20 +93,29 @@ class GameScene extends Phaser.Scene {
             this.add.text(CONFIG.width - 90, y - 18, building.emoji, { fontSize: '42px' }).setOrigin(0.5);
             this.add.text(CONFIG.width - 90, y + 22, building.name, { fontSize: '15px', color: '#ffffff' }).setOrigin(0.5);
 
-            // Click иштөөсү үчүн
             btnBg.on('pointerdown', () => {
                 this.selectedBuilding = building;
-                console.log(`✅ Тандалды: ${building.name} (${building.cost} Leaves)`);
-                
-                // Визуалдык эффект
-                btnBg.setStrokeStyle(4, 0xffee55);
-                this.time.delayedCall(200, () => {
-                    btnBg.setStrokeStyle(4, 0x55bb55);
-                });
+                console.log(`✅ Тандалды: ${building.name}`);
             });
 
             y += 95;
         });
+    }
+
+    placeBuilding(x, y) {
+        if (!this.selectedBuilding) return;
+
+        // Имаратты кошуу
+        const building = this.add.text(x, y, this.selectedBuilding.emoji, { 
+            fontSize: '55px' 
+        }).setOrigin(0.5);
+
+        this.buildings.push(building);
+
+        console.log(`🏗️ ${this.selectedBuilding.name} салынды!`);
+
+        // Тандоону тазалоо (бир имараттан кийин)
+        // this.selectedBuilding = null;   // Кааласаңыз кийинчерээк ачыңыз
     }
 }
 
