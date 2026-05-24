@@ -1,23 +1,16 @@
 // src/scenes/GameScene.js
-
 class GameScene extends Phaser.Scene {
     constructor() {
         super('GameScene');
         this.selectedBuilding = null;
         this.buildings = [];
+        this.resources = { ...CONFIG.resources };
     }
 
     create() {
-        const w = CONFIG.width;
-        const h = CONFIG.height;
-
         this.createBackground();
         this.createResourcePanel();
-        
-        this.add.text(w/2, 75, '🐜 КУМУРСКА ЧЕП 🐜', {
-            fontSize: '42px', color: '#ffdd77'
-        }).setOrigin(0.5).setShadow(3, 3, '#000', 5);
-
+        this.createTitle();
         this.createAnimatedAnts();
         this.createBuildMenu();
 
@@ -28,7 +21,7 @@ class GameScene extends Phaser.Scene {
             }
         });
 
-        console.log("🏗️ Kumurska Chep - Оюн даяр!");
+        console.log("🏰 Kumurska Chep — Ойногого даяр!");
     }
 
     createBackground() {
@@ -37,68 +30,64 @@ class GameScene extends Phaser.Scene {
         this.add.rectangle(w/2, h/2, w, h, 0x0b2a0b);
         this.add.rectangle(w/2, h - 90, w, 180, 0x1e3d1e);
         this.add.rectangle(w/2, h - 130, w, 60, 0x2a5c2a);
-
-        this.add.text(150, h - 85, '🌿', { fontSize: '40px' });
-        this.add.text(380, h - 115, '🌱', { fontSize: '35px' });
-        this.add.text(650, h - 80, '🌿', { fontSize: '45px' });
-        this.add.text(920, h - 100, '🍄', { fontSize: '38px' });
     }
 
     createResourcePanel() {
-        const resources = [
-            { icon: '🍃', name: 'Leaves', value: CONFIG.resources.leaves, color: '#90ee90' },
-            { icon: '🍯', name: 'Honey', value: CONFIG.resources.honey, color: '#ffcc00' },
-            { icon: '🟫', name: 'Dirt',  value: CONFIG.resources.dirt, color: '#c19a6b' },
-            { icon: '💧', name: 'Water', value: CONFIG.resources.water, color: '#87cefa' }
+        const resList = [
+            { key: 'leaves', icon: '🍃', color: '#90ee90' },
+            { key: 'honey', icon: '🍯', color: '#ffcc00' },
+            { key: 'dirt', icon: '🟫', color: '#c19a6b' },
+            { key: 'water', icon: '💧', color: '#87cefa' }
         ];
 
         let x = 40;
-        resources.forEach(res => {
-            this.add.rectangle(x + 85, 48, 170, 58, 0x112211, 0.85).setStrokeStyle(3, 0x334422);
-            this.add.text(x + 25, 38, res.icon + " " + res.name, { fontSize: '19px', color: res.color, fontStyle: 'bold' });
-            this.add.text(x + 30, 63, res.value.toString(), { fontSize: '24px', color: '#ffffff', fontStyle: 'bold' });
+        resList.forEach(res => {
+            this.add.rectangle(x + 85, 48, 170, 58, 0x112211, 0.9).setStrokeStyle(3, 0x334422);
+            this.add.text(x + 25, 38, res.icon + " " + res.key.charAt(0).toUpperCase() + res.key.slice(1), 
+                { fontSize: '19px', color: res.color, fontStyle: 'bold' });
+            
+            this[res.key + 'Text'] = this.add.text(x + 30, 63, this.resources[res.key].toString(), 
+                { fontSize: '24px', color: '#fff', fontStyle: 'bold' });
             x += 195;
         });
     }
 
-    createAnimatedAnts() {
-        const antData = [
-            { startX: 150, y: 280, delay: 0 },
-            { startX: 380, y: 320, delay: 800 },
-            { startX: 650, y: 250, delay: 400 },
-            { startX: 880, y: 300, delay: 1200 }
-        ];
+    createTitle() {
+        this.add.text(CONFIG.width/2, 75, '🐜 КУМУРСКА ЧЕП 🐜', {
+            fontSize: '42px', color: '#ffdd77'
+        }).setOrigin(0.5).setShadow(3, 3, '#000', 5);
+    }
 
-        antData.forEach(data => {
-            const ant = this.add.text(data.startX, data.y, '🐜', { fontSize: '65px' }).setOrigin(0.5);
-            this.tweens.add({ targets: ant, x: data.startX + 280, duration: 3500, delay: data.delay, yoyo: true, repeat: -1 });
-            this.tweens.add({ targets: ant, y: data.y - 12, duration: 800, delay: data.delay, yoyo: true, repeat: -1 });
+    createAnimatedAnts() {
+        const positions = [150, 380, 650, 880];
+        positions.forEach((x, i) => {
+            const ant = this.add.text(x, 260 + Math.random()*80, '🐜', { fontSize: '62px' }).setOrigin(0.5);
+            this.tweens.add({ targets: ant, x: x + 220, duration: 3000 + i*400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
         });
     }
 
     createBuildMenu() {
-        const buildTypes = [
-            { name: "Туннель", emoji: "🕳️", cost: 50 },
-            { name: "Склад", emoji: "📦", cost: 80 },
-            { name: "Казарма", emoji: "⚔️", cost: 120 },
-            { name: "Queen Chamber", emoji: "👑", cost: 200 }
+        const buildings = [
+            { name: "Туннель", emoji: "🕳️", cost: 60, type: "tunnel" },
+            { name: "Склад", emoji: "📦", cost: 100, type: "storage" },
+            { name: "Казарма", emoji: "⚔️", cost: 150, type: "barracks" },
+            { name: "Queen Chamber", emoji: "👑", cost: 250, type: "queen" }
         ];
 
-        let y = 140;
-        buildTypes.forEach(building => {
-            const btnBg = this.add.rectangle(CONFIG.width - 90, y, 130, 80, 0x223322, 0.95)
+        let y = 150;
+        buildings.forEach(b => {
+            const btn = this.add.rectangle(CONFIG.width - 90, y, 135, 82, 0x223322, 0.95)
                 .setStrokeStyle(4, 0x55bb55)
                 .setInteractive({ useHandCursor: true });
 
-            this.add.text(CONFIG.width - 90, y - 18, building.emoji, { fontSize: '42px' }).setOrigin(0.5);
-            this.add.text(CONFIG.width - 90, y + 22, building.name, { fontSize: '15px', color: '#ffffff' }).setOrigin(0.5);
+            this.add.text(CONFIG.width - 90, y - 20, b.emoji, { fontSize: '42px' }).setOrigin(0.5);
+            this.add.text(CONFIG.width - 90, y + 25, b.name, { fontSize: '14px', color: '#fff' }).setOrigin(0.5);
 
-            btnBg.on('pointerdown', () => {
-                this.selectedBuilding = building;
-                console.log(`✅ Тандалды: ${building.name} (${building.cost} Leaves)`);
+            btn.on('pointerdown', () => {
+                this.selectedBuilding = b;
+                console.log(`✅ Тандалды: ${b.name}`);
             });
-
-            y += 95;
+            y += 100;
         });
     }
 
@@ -106,11 +95,28 @@ class GameScene extends Phaser.Scene {
         if (!this.selectedBuilding) return;
 
         const building = this.add.text(x, y, this.selectedBuilding.emoji, { 
-            fontSize: '55px' 
+            fontSize: '58px' 
         }).setOrigin(0.5).setInteractive();
 
-        this.buildings.push(building);
+        this.buildings.push({
+            obj: building,
+            type: this.selectedBuilding.type
+        });
+
         console.log(`🏗️ ${this.selectedBuilding.name} салынды!`);
+
+        // Ресурстарды азайтуу
+        if (this.resources.leaves >= this.selectedBuilding.cost) {
+            this.resources.leaves -= this.selectedBuilding.cost;
+            this.updateResources();
+        }
+    }
+
+    updateResources() {
+        if (this.leavesText) this.leavesText.setText(this.resources.leaves);
+        if (this.honeyText) this.honeyText.setText(this.resources.honey);
+        if (this.dirtText) this.dirtText.setText(this.resources.dirt);
+        if (this.waterText) this.waterText.setText(this.resources.water);
     }
 }
 
