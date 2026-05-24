@@ -6,14 +6,14 @@ class GameScene extends Phaser.Scene {
         this.buildings = [];
         this.workers = [];
         this.army = [];
-        this.resources = { leaves: 800, honey: 400, dirt: 500, water: 250 };
+        this.resources = { leaves: 650, honey: 320, dirt: 480, water: 220 };
     }
 
     create() {
         this.createBackground();
         this.createResourcePanel();
         this.createTitle();
-        this.spawnWorkers();
+        this.spawnWorkers(18);
         this.createBuildMenu();
 
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -23,20 +23,20 @@ class GameScene extends Phaser.Scene {
             if (this.selectedBuilding) {
                 this.placeBuilding(pointer.worldX, pointer.worldY);
             } else {
-                this.handleClick(pointer.worldX, pointer.worldY);
+                this.handleObjectClick(pointer.worldX, pointer.worldY);
             }
         });
 
-        this.time.addEvent({ delay: 800, callback: this.gameTick, callbackScope: this, loop: true });
+        this.time.addEvent({ delay: 900, callback: this.gameTick, callbackScope: this, loop: true });
 
-        console.log("🎮 Кумурска Чеп — Clash of Clans стили иштели жатат!");
+        console.log("🐜 Кумурска Чеп — УЛАНТЫЛДЫ!");
     }
 
     createBackground() {
-        const w = CONFIG.width * 2.2;
-        const h = CONFIG.height * 2;
+        const w = CONFIG.width * 2.5;
+        const h = CONFIG.height * 2.2;
         this.add.rectangle(w/2, h/2, w, h, 0x0b2a0b);
-        this.add.rectangle(w/2, h - 140, w, 280, 0x1e3d1e);
+        this.add.rectangle(w/2, h - 150, w, 300, 0x1e3d1e);
     }
 
     createResourcePanel() {
@@ -63,20 +63,20 @@ class GameScene extends Phaser.Scene {
         }).setOrigin(0.5).setShadow(4,4,'#000',8);
     }
 
-    spawnWorkers() {
-        for (let i = 0; i < 15; i++) {
-            const worker = this.add.text(400 + Math.random()*500, 250 + Math.random()*250, '🐜', {fontSize:'48px'}).setOrigin(0.5);
+    spawnWorkers(count) {
+        for (let i = 0; i < count; i++) {
+            const worker = this.add.text(300 + Math.random()*700, 220 + Math.random()*280, '🐜', {fontSize:'50px'}).setOrigin(0.5);
             this.workers.push(worker);
-            this.makeAntMove(worker);
+            this.makeAntAlive(worker);
         }
     }
 
-    makeAntMove(ant) {
+    makeAntAlive(ant) {
         this.tweens.add({
             targets: ant,
-            x: ant.x + (Math.random() * 400 - 200),
-            y: ant.y + (Math.random() * 300 - 150),
-            duration: 1400 + Math.random() * 1600,
+            x: ant.x + (Math.random() * 420 - 210),
+            y: ant.y + (Math.random() * 280 - 140),
+            duration: 1200 + Math.random() * 1400,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut'
@@ -84,15 +84,15 @@ class GameScene extends Phaser.Scene {
     }
 
     createBuildMenu() {
-        const list = [
-            {name:"Туннель", emoji:"🕳️", cost:70, type:"tunnel"},
-            {name:"Склад", emoji:"📦", cost:120, type:"storage"},
-            {name:"Казарма", emoji:"⚔️", cost:180, type:"barracks"},
-            {name:"Queen", emoji:"👑", cost:320, type:"queen"}
+        const buildings = [
+            {name:"Туннель", emoji:"🕳️", cost:65, type:"tunnel"},
+            {name:"Склад", emoji:"📦", cost:125, type:"storage"},
+            {name:"Казарма", emoji:"⚔️", cost:175, type:"barracks"},
+            {name:"Queen", emoji:"👑", cost:350, type:"queen"}
         ];
 
         let y = 140;
-        list.forEach(b => {
+        buildings.forEach(b => {
             const btn = this.add.rectangle(CONFIG.width - 85, y, 130, 78, 0x223322, 0.95)
                 .setStrokeStyle(4, 0x55bb55).setInteractive({useHandCursor:true});
 
@@ -107,18 +107,17 @@ class GameScene extends Phaser.Scene {
     placeBuilding(x, y) {
         if (!this.selectedBuilding || this.resources.leaves < this.selectedBuilding.cost) return;
 
-        const b = this.add.text(x, y, this.selectedBuilding.emoji, {fontSize:'56px'}).setOrigin(0.5).setInteractive();
+        const building = this.add.text(x, y, this.selectedBuilding.emoji, {fontSize:'56px'}).setOrigin(0.5).setInteractive();
         
-        this.buildings.push({obj: b, type: this.selectedBuilding.type, level: 1});
-
+        this.buildings.push({obj: building, type: this.selectedBuilding.type, level: 1});
         this.resources.leaves -= this.selectedBuilding.cost;
         this.updateResources();
     }
 
-    handleClick(x, y) {
+    handleObjectClick(x, y) {
         for (let b of this.buildings) {
-            if (Phaser.Math.Distance.Between(x, y, b.obj.x, b.obj.y) < 60) {
-                if (b.type === "barracks") this.trainArmy(b);
+            if (Phaser.Math.Distance.Between(x, y, b.obj.x, b.obj.y) < 55) {
+                if (b.type === "barracks") this.trainSoldier(b);
                 else this.upgradeBuilding(b);
                 return;
             }
@@ -126,27 +125,29 @@ class GameScene extends Phaser.Scene {
     }
 
     upgradeBuilding(building) {
-        if (this.resources.leaves < 120) return;
+        if (this.resources.leaves < 150) return;
         building.level++;
-        building.obj.setFontSize(56 + building.level * 6);
-        this.resources.leaves -= 120;
+        building.obj.setFontSize(56 + building.level * 7);
+        this.resources.leaves -= 150;
         this.updateResources();
-        console.log(`⬆️ ${building.type} Level ${building.level}`);
+        console.log(`⬆️ ${building.type} → Level ${building.level}`);
     }
 
-    trainArmy(barracks) {
-        if (this.resources.honey < 50) return;
-        const soldier = this.add.text(barracks.obj.x + 60, barracks.obj.y, '🐜⚔️', {fontSize:'45px'}).setOrigin(0.5);
+    trainSoldier(barracks) {
+        if (this.resources.honey < 45) return;
+        const soldier = this.add.text(barracks.obj.x + 40, barracks.obj.y - 30, '🐜⚔️', {fontSize:'48px'}).setOrigin(0.5);
         this.army.push(soldier);
-        this.resources.honey -= 50;
+        this.resources.honey -= 45;
         this.updateResources();
-        console.log("⚔️ Жаңы согушчу чыкты!");
+        console.log("⚔️ Жаңы согушчу даяр!");
     }
 
-    collectResources() {
+    gameTick() {
         let gain = 0;
         this.buildings.forEach(b => {
-            if (b.type === "storage" || b.type === "tunnel") gain += 15 * (b.level || 1);
+            if (b.type === "storage" || b.type === "tunnel") {
+                gain += 12 * (b.level || 1);
+            }
         });
         if (gain > 0) {
             this.resources.leaves += gain;
@@ -162,10 +163,10 @@ class GameScene extends Phaser.Scene {
     }
 
     update() {
-        if (this.cursors.left.isDown || this.keys.A.isDown) this.cameras.main.scrollX -= 12;
-        if (this.cursors.right.isDown || this.keys.D.isDown) this.cameras.main.scrollX += 12;
-        if (this.cursors.up.isDown || this.keys.W.isDown) this.cameras.main.scrollY -= 12;
-        if (this.cursors.down.isDown || this.keys.S.isDown) this.cameras.main.scrollY += 12;
+        if (this.cursors.left.isDown || this.keys.A.isDown) this.cameras.main.scrollX -= 14;
+        if (this.cursors.right.isDown || this.keys.D.isDown) this.cameras.main.scrollX += 14;
+        if (this.cursors.up.isDown || this.keys.W.isDown) this.cameras.main.scrollY -= 14;
+        if (this.cursors.down.isDown || this.keys.S.isDown) this.cameras.main.scrollY += 14;
     }
 }
 
