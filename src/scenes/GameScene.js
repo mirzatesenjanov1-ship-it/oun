@@ -6,7 +6,7 @@ class GameScene extends Phaser.Scene {
         this.buildings = [];
         this.workers = [];
         this.resources = { ...CONFIG.resources };
-        this.lastResourceTick = Date.now();
+        this.cameraSpeed = 8;
     }
 
     create() {
@@ -16,21 +16,28 @@ class GameScene extends Phaser.Scene {
         this.spawnWorkers();
         this.createBuildMenu();
 
+        // Клавиатура башкаруу
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.keys = this.input.keyboard.addKeys('W,A,S,D');
+
+        // Жерге басуу менен имарат салуу
         this.input.on('pointerdown', (pointer) => {
-            if (this.selectedBuilding) this.placeBuilding(pointer.x, pointer.y);
+            if (this.selectedBuilding) {
+                this.placeBuilding(pointer.worldX, pointer.worldY);
+            }
         });
 
         // Ресурстарды автоматтык чогултуу
-        this.time.addEvent({ delay: 1500, callback: this.collectResources, callbackScope: this, loop: true });
+        this.time.addEvent({ delay: 1200, callback: this.collectResources, callbackScope: this, loop: true });
 
-        console.log("🐜 КУМУРСКА ЧЕП — ТОЛУК ВЕРСИЯ ИШТЕП ЖАТАТ!");
+        console.log("⌨️ Клавиатура башкаруу кошулду! WASD же Arrow keys менен жылдыр.");
     }
 
     createBackground() {
-        const w = CONFIG.width, h = CONFIG.height;
+        const w = CONFIG.width * 2;
+        const h = CONFIG.height * 1.8;
         this.add.rectangle(w/2, h/2, w, h, 0x0b2a0b);
-        this.add.rectangle(w/2, h - 90, w, 180, 0x1e3d1e);
-        this.add.rectangle(w/2, h - 130, w, 60, 0x2a5c2a);
+        this.add.rectangle(w/2, h - 120, w, 240, 0x1e3d1e);
     }
 
     createResourcePanel() {
@@ -58,14 +65,13 @@ class GameScene extends Phaser.Scene {
     }
 
     spawnWorkers() {
-        for (let i = 0; i < 8; i++) {
-            const worker = this.add.text(100 + i*110, 240 + Math.random()*140, '🐜', {fontSize:'52px'}).setOrigin(0.5);
+        for (let i = 0; i < 10; i++) {
+            const worker = this.add.text(200 + i*90, 280 + Math.random()*180, '🐜', {fontSize:'55px'}).setOrigin(0.5);
             this.workers.push(worker);
-            
             this.tweens.add({
                 targets: worker,
-                x: 100 + i*110 + 160,
-                duration: 2500 + Math.random()*1500,
+                x: 200 + i*90 + 140,
+                duration: 2200 + Math.random()*1800,
                 yoyo: true,
                 repeat: -1,
                 ease: 'Sine.easeInOut'
@@ -105,7 +111,6 @@ class GameScene extends Phaser.Scene {
         this.buildings.push({
             obj: building,
             type: this.selectedBuilding.type,
-            level: 1,
             lastCollect: Date.now()
         });
 
@@ -115,14 +120,12 @@ class GameScene extends Phaser.Scene {
     }
 
     collectResources() {
-        let totalLeaves = 0;
+        let gain = 0;
         this.buildings.forEach(b => {
-            if (b.type === "storage" || b.type === "tunnel") {
-                totalLeaves += 8;
-            }
+            if (b.type === "storage" || b.type === "tunnel") gain += 12;
         });
-        if (totalLeaves > 0) {
-            this.resources.leaves += totalLeaves;
+        if (gain > 0) {
+            this.resources.leaves += gain;
             this.updateResources();
         }
     }
@@ -132,6 +135,14 @@ class GameScene extends Phaser.Scene {
         if (this.honeyText) this.honeyText.setText(Math.floor(this.resources.honey));
         if (this.dirtText) this.dirtText.setText(Math.floor(this.resources.dirt));
         if (this.waterText) this.waterText.setText(Math.floor(this.resources.water));
+    }
+
+    update() {
+        // Клавиатура менен камераны жылдыруу
+        if (this.cursors.left.isDown || this.keys.A.isDown) this.cameras.main.scrollX -= this.cameraSpeed;
+        if (this.cursors.right.isDown || this.keys.D.isDown) this.cameras.main.scrollX += this.cameraSpeed;
+        if (this.cursors.up.isDown || this.keys.W.isDown) this.cameras.main.scrollY -= this.cameraSpeed;
+        if (this.cursors.down.isDown || this.keys.S.isDown) this.cameras.main.scrollY += this.cameraSpeed;
     }
 }
 
