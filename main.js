@@ -1,5 +1,4 @@
-// main.js - Оюнду баштоочу файл
-
+// main.js
 class KumurskaChep {
     constructor() {
         this.init();
@@ -28,7 +27,6 @@ class KumurskaChep {
     }
 }
 
-// Оюнду жүктөө
 window.onload = () => {
     new KumurskaChep();
 };
